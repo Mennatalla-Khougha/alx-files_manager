@@ -10,7 +10,7 @@ class RedisClient {
   
   isAlive() {
     const res = this.client.on('ready', () => true);
-    return !!res;
+    return res;
   }
   
   async get(key) {
@@ -25,7 +25,7 @@ class RedisClient {
   }
 
   async del(key) {
-    this.Del(key);
+    await this.Del(key);
   }
 }
 const redisClient = new RedisClient();
