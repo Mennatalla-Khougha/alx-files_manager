@@ -26,7 +26,7 @@ class RedisClient {
   }
 
   async del(key) {
-    this.Del(key);
+    await this.Del(key);
   }
 }
 const redisClient = new RedisClient();
