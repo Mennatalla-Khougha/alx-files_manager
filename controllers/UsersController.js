@@ -20,7 +20,6 @@ class UsersController {
       } else {
         const hashedPwd = sha1(password);
         const user = await users.insertOne({ email, password: hashedPwd });
-        console.log(user);
         res.status(201).json({ id: user.insertedId, email });
       }
     });
