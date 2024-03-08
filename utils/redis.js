@@ -12,7 +12,7 @@ class RedisClient {
 
   isAlive() {
     const res = this.client.on('ready', () => true);
-    return !!res;
+    return res;
   }
 
   async get(key) {
