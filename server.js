@@ -5,4 +5,4 @@ const routes = require('./routes/index');
 
 app.use('/', routes);
 
-app.listen(process.env.DB_PORT || 5000);
+app.listen(process.env.PORT || 5000);
