@@ -1,5 +1,5 @@
 import sha1 from 'sha1';
-import { ObjectId } from 'mongodb';
+import { ObjectID } from 'mongodb';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
@@ -38,7 +38,7 @@ class UsersController {
       return;
     }
     const users = dbClient.db.collection('users');
-    const objectId = new ObjectId(userId);
+    const objectId = new ObjectID(userId);
     await users.findOne({ _id: objectId }, (err, result) => {
       if (!result) {
         res.status(401).json({ error: 'Unauthorized' });
