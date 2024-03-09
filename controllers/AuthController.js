@@ -7,9 +7,9 @@ class AuthController {
   static async getConnect(req, res) {
     const auth = req.header('Authorization').split(' ')[1];
     const [email, password] = Buffer.from(auth, 'base64').toString('ascii').split(':');
-    if (!email || ! password) {
-        res.status(401).json({ error: 'Unauthorized' });
-        return;
+    if (!email || !password) {
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
     const hashPassword = sha1(password);
     const users = dbClient.db.collection('users');
