@@ -30,7 +30,7 @@ class AuthController {
       return;
     }
     await redisClient.del(key);
-    res.status(204).send();
+    res.status(204).json({});
   }
 }
 
