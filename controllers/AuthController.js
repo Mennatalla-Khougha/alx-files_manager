@@ -17,7 +17,7 @@ class AuthController {
     // console.log(typeof user._id)
     const token = uuidv4();
     const key = `auth_${token}`;
-    await redisClient.set(key, user.id.toString(), 86400);
+    await redisClient.set(key, user._id.toString(), 86400);
     res.status(200).json({ token });
   }
 
