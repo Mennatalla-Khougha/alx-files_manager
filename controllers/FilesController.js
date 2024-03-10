@@ -37,30 +37,34 @@ class FilesController {
       parentId: parentId || '0',
       isPublic: isPublic || false,
     };
+    const files = dbClient.db.collection('files');
     if (parentId) {
-      const files = dbClient.db.collection('files');
       const idObject = new ObjectID(parentId);
-      await files.findOne({ _id: idObject }, async (err, result) => {
-        if (!result) {
-          return res.status(400).json({ error: 'Parent not found' });
-        } if (result.type !== 'folder') {
-          return res.status(400).json({ error: 'Parent is not a folder' });
-        }
-        return true;
-      });
-    } else if (type === 'folder') {
-      await dbClient.db.collection('files').insertOne(file);
+      const parentFolder = await files.findOne({ _id: idObject });
+      if (!parentFolder) {
+        res.status(400).json({ error: 'Parent not found' });
+      } if (parentFolder.type !== 'folder') {
+        res.status(400).json({ error: 'Parent is not a folder' });
+      }
+    }
+    if (type === 'folder') {
+      await files.insertOne(file);
       res.status(201).json(file);
-    } else {
-      const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
+    }
+    const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
+    try {
       if (!fs.existsSync(folderPath)) {
-        promisify(fs.mkdir(folderPath));
+        await promisify(fs.mkdir(folderPath));
       }
       const filePath = `${folderPath}/${uuidv4()}`;
       await promisify(fs.writeFile(filePath, Buffer.from(data, 'base64')));
       file.localPath = filePath;
-      await dbClient.db.collection('files').insertOne(file);
+      await files.insertOne(file);
       res.status(201).json(file);
+    } catch (err) {
+      res.status(400).json({
+        err: err.message,
+      });
     }
   }
 }
