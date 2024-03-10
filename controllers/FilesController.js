@@ -23,7 +23,7 @@ class FilesController {
       res.status(400).json({ error: 'Missing name' });
       return;
     }
-    if (!type || !['folder', 'file', 'image'].includes(type)) {
+    if (!type) {
       res.status(400).json({ error: 'Missing type' });
       return;
     }
@@ -37,8 +37,10 @@ class FilesController {
       const parentFolder = await files.findOne({ _id: idObject });
       if (!parentFolder) {
         res.status(400).json({ error: 'Parent not found' });
+        return;
       } if (parentFolder.type !== 'folder') {
         res.status(400).json({ error: 'Parent is not a folder' });
+        return;
       }
     }
     if (type === 'folder') {
@@ -51,23 +53,23 @@ class FilesController {
       });
       res.status(201).json({
         id: result.insertedId,
-        userId: userId,
+        userId,
         name,
         type,
         isPublic,
         parentId: parentId || 0,
       });
-      return
+      return;
     }
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
     if (!fs.existsSync(folderPath)) {
       await fs.mkdir(folderPath);
     }
     const filePath = `${folderPath}/${uuidv4()}`;
-    fs.writeFile(filePath, Buffer.from(data, 'base64'), async (err) => {
+    fs.writeFile(filePath, Buffer.from(data, 'base64'), 'utf-8', async (err) => {
       if (!err) {
         const result = await files.insertOne({
-          userId: userId,
+          userId,
           name,
           type,
           isPublic,
@@ -76,7 +78,7 @@ class FilesController {
         });
         res.status(201).json({
           id: result.insertedId,
-          userId: userId,
+          userId,
           name,
           type,
           isPublic,
