@@ -61,7 +61,7 @@ class FilesController {
       await files.insertOne(file);
       res.status(201).json(file);
     } catch (err) {
-//      pass
+      // pass
     }
   }
 }
