@@ -55,7 +55,7 @@ class FilesController {
         fs.mkdirSync(folderPath, { recursive: true });
       }
       const filePath = `${folderPath}/${uuidv4()}`;
-      fs.writeFile(filePath, Buffer.from(data, 'base64'));
+      await fs.promises.writeFile(filePath, Buffer.from(data, 'base64'));
       file.localPath = filePath;
       await dbClient.db.collection('files').insertOne(file);
       res.status(201).json(file);
