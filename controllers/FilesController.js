@@ -51,18 +51,16 @@ class FilesController {
       res.status(201).json(file);
     }
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
-    try {
-      if (!fs.existsSync(folderPath)) {
-        await fs.mkdir(folderPath);
-      }
-      const filePath = `${folderPath}/${uuidv4()}`;
-      await fs.writeFile(filePath, Buffer.from(data, 'base64'));
-      file.localPath = filePath;
-      await files.insertOne(file);
-      res.status(201).json(file);
-    } catch (err) {
-      // pass
+    if (!fs.existsSync(folderPath)) {
+      await fs.mkdir(folderPath);
     }
+    const filePath = `${folderPath}/${uuidv4()}`;
+    fs.writeFile(filePath, Buffer.from(data, 'base64'), async (err) => {
+      if (!err) {
+        file.localPath = filePath;
+        await files.insertOne(file);
+        res.status(201).json(file);;
+      }});
   }
 }
 module.exports = FilesController;
