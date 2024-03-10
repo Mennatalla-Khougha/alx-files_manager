@@ -56,6 +56,7 @@ class FilesController {
         isPublic: file.isPublic,
         parentId: file.parentId,
       });
+      return
     }
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
     if (!fs.existsSync(folderPath)) {
