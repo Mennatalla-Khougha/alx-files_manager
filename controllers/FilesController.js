@@ -1,6 +1,5 @@
 import { ObjectID } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
-import { promisify } from 'util';
 import fs from 'fs';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
@@ -54,17 +53,15 @@ class FilesController {
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
     try {
       if (!fs.existsSync(folderPath)) {
-        await promisify(fs.mkdir(folderPath));
+        await fs.mkdir(folderPath);
       }
       const filePath = `${folderPath}/${uuidv4()}`;
-      await promisify(fs.writeFile(filePath, Buffer.from(data, 'base64')));
+      await fs.writeFile(filePath, Buffer.from(data, 'base64'));
       file.localPath = filePath;
       await files.insertOne(file);
       res.status(201).json(file);
     } catch (err) {
-      res.status(400).json({
-        err: err.message,
-      });
+//      pass
     }
   }
 }
