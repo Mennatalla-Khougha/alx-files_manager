@@ -44,21 +44,22 @@ class FilesController {
       }
     }
     if (type === 'folder') {
-      const result = await files.insertOne({
+      await files.insertOne({
         userId,
         name,
         type,
         parentId: parentId || 0,
         isPublic,
-      });
-      res.status(201).json({
-        id: result.insertedId,
-        userId,
-        name,
-        type,
-        isPublic,
-        parentId: parentId || 0,
-      });
+      }).then((result) => {
+        res.status(201).json({
+          id: result.insertedId,
+          userId,
+          name,
+          type,
+          isPublic,
+          parentId: parentId || 0,
+        })
+      })      
       return;
     }
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -68,22 +69,23 @@ class FilesController {
     const filePath = `${folderPath}/${uuidv4()}`;
     fs.writeFile(filePath, Buffer.from(data, 'base64'), 'utf-8', async (err) => {
       if (!err) {
-        const result = await files.insertOne({
+        await files.insertOne({
           userId,
           name,
           type,
           isPublic,
           parentId: parentId || 0,
           localPath: filePath,
-        });
-        res.status(201).json({
-          id: result.insertedId,
-          userId,
-          name,
-          type,
-          isPublic,
-          parentId: parentId || 0,
-        });
+        }).then((result) => {
+          res.status(201).json({
+            id: result.insertedId,
+            userId,
+            name,
+            type,
+            isPublic,
+            parentId: parentId || 0,
+          });
+        })
       }
     });
   }
