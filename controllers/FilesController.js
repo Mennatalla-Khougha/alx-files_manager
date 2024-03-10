@@ -48,7 +48,14 @@ class FilesController {
     }
     if (type === 'folder') {
       await files.insertOne(file);
-      res.status(201).json(file);
+      res.status(201).json({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId
+      });
     }
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
     if (!fs.existsSync(folderPath)) {
@@ -59,7 +66,14 @@ class FilesController {
       if (!err) {
         file.localPath = filePath;
         await files.insertOne(file);
-        res.status(201).json(file);;
+        res.status(201).json({
+          id: file._id,
+          userId: file.userId,
+          name: file.name,
+          type: file.type,
+          isPublic: file.isPublic,
+          parentId: file.parentId
+        });
       }});
   }
 }
