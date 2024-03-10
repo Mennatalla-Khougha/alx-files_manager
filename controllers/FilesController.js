@@ -54,7 +54,7 @@ class FilesController {
         name: file.name,
         type: file.type,
         isPublic: file.isPublic,
-        parentId: file.parentId
+        parentId: file.parentId,
       });
     }
     const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -72,9 +72,10 @@ class FilesController {
           name: file.name,
           type: file.type,
           isPublic: file.isPublic,
-          parentId: file.parentId
+          parentId: file.parentId,
         });
-      }});
+      }
+    });
   }
 }
 module.exports = FilesController;
