@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+import { promisify } from 'util';
 
 class FilesController {
   static async postUpload(req, res) {
@@ -39,7 +40,7 @@ class FilesController {
     if (parentId) {
       const files = dbClient.db.collection('files');
       const idObject = new ObjectID(parentId);
-      await files.findOne({ id: idObject }, async (err, result) => {
+      await files.findOne({ _id: idObject }, async (err, result) => {
         if (!result) {
           res.status(400).json({ error: 'Parent not found' });
         } else if (result.type !== 'folder') {
@@ -52,10 +53,10 @@ class FilesController {
     } else {
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       if (!fs.existsSync(folderPath)) {
-        fs.mkdirSync(folderPath, { recursive: true });
+        fs.promisify(mkdir(folderPath, { recursive: true }));
       }
       const filePath = `${folderPath}/${uuidv4()}`;
-      await fs.promises.writeFile(filePath, Buffer.from(data, 'base64'));
+      await fs.promisify(writeFile(filePath, Buffer.from(data, 'base64')));
       file.localPath = filePath;
       await dbClient.db.collection('files').insertOne(file);
       res.status(201).json(file);
