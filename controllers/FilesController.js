@@ -1,9 +1,9 @@
 import { ObjectID } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
+import { promisify } from 'util';
 import fs from 'fs';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
-import { promisify } from 'util';
 
 class FilesController {
   static async postUpload(req, res) {
@@ -42,10 +42,11 @@ class FilesController {
       const idObject = new ObjectID(parentId);
       await files.findOne({ _id: idObject }, async (err, result) => {
         if (!result) {
-          res.status(400).json({ error: 'Parent not found' });
-        } else if (result.type !== 'folder') {
-          res.status(400).json({ error: 'Parent is not a folder' });
+          return res.status(400).json({ error: 'Parent not found' });
+        } if (result.type !== 'folder') {
+          return res.status(400).json({ error: 'Parent is not a folder' });
         }
+        return true;
       });
     } else if (type === 'folder') {
       await dbClient.db.collection('files').insertOne(file);
@@ -53,10 +54,10 @@ class FilesController {
     } else {
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
       if (!fs.existsSync(folderPath)) {
-        fs.promisify(mkdir(folderPath, { recursive: true }));
+        promisify(fs.mkdir(folderPath));
       }
       const filePath = `${folderPath}/${uuidv4()}`;
-      await fs.promisify(writeFile(filePath, Buffer.from(data, 'base64')));
+      await promisify(fs.writeFile(filePath, Buffer.from(data, 'base64')));
       file.localPath = filePath;
       await dbClient.db.collection('files').insertOne(file);
       res.status(201).json(file);
