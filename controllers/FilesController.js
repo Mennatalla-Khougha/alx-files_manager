@@ -13,9 +13,11 @@ class FilesController {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    const {
-      name, type, parentId, isPublic, data,
-    } = req.body;
+    const { name } = req.body;
+    const { type } = req.body;
+    const { parentId } = req.body;
+    const isPublic = req.body.isPublic || false;
+    const { data } = req.body;
 
     if (!name) {
       res.status(400).json({ error: 'Missing name' });
@@ -29,13 +31,6 @@ class FilesController {
       res.status(400).json({ error: 'Missing data' });
       return;
     }
-    const file = {
-      name,
-      type,
-      userId,
-      parentId: parentId || '0',
-      isPublic: isPublic || false,
-    };
     const files = dbClient.db.collection('files');
     if (parentId) {
       const idObject = new ObjectID(parentId);
@@ -47,14 +42,20 @@ class FilesController {
       }
     }
     if (type === 'folder') {
-      await files.insertOne(file);
+      const result = await files.insertOne({
+        userId,
+        name,
+        type,
+        parentId: parentId || 0,
+        isPublic,
+      });
       res.status(201).json({
-        id: file._id,
-        userId: file.userId,
-        name: file.name,
-        type: file.type,
-        isPublic: file.isPublic,
-        parentId: file.parentId,
+        id: result.insertedId,
+        userId: userId,
+        name,
+        type,
+        isPublic,
+        parentId: parentId || 0,
       });
       return
     }
@@ -65,15 +66,21 @@ class FilesController {
     const filePath = `${folderPath}/${uuidv4()}`;
     fs.writeFile(filePath, Buffer.from(data, 'base64'), async (err) => {
       if (!err) {
-        file.localPath = filePath;
-        await files.insertOne(file);
+        const result = await files.insertOne({
+          userId: userId,
+          name,
+          type,
+          isPublic,
+          parentId: parentId || 0,
+          localPath: filePath,
+        });
         res.status(201).json({
-          id: file._id,
-          userId: file.userId,
-          name: file.name,
-          type: file.type,
-          isPublic: file.isPublic,
-          parentId: file.parentId,
+          id: result.insertedId,
+          userId: userId,
+          name,
+          type,
+          isPublic,
+          parentId: parentId || 0,
         });
       }
     });
