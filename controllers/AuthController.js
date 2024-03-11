@@ -18,7 +18,6 @@ class AuthController {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    // console.log(typeof user._id)
     const token = uuidv4();
     const key = `auth_${token}`;
     await redisClient.set(key, user._id.toString(), 86400);
