@@ -86,40 +86,29 @@ class FilesController {
         parentId,
       });
     }
-    // , 'utf-8', async (err) => {
-    //   if (!err) {
-    //     const result = await files.insertOne({
-    //       userId,
-    //       name,
-    //       type,
-    //       isPublic,
-    //       parentId: parentId || 0,
-    //       localPath: filePath,
-    //     });
-    //     res.status(201).json({
-    //       id: result.insertedId,
-    //       userId,
-    //       name,
-    //       type,
-    //       isPublic,
-    //       parentId: parentId || 0,
-    //     });
-    //   }
-    // }
   }
 
   static async getIndex(req, res) {
     const token = req.header('X-Token');
     const key = `auth_${token}`;
-    const userId = await redisClient.get(key);
-    if (!userId) {
+    const user = await redisClient.get(key);
+    if (!user) {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    const { parentId = 0, page = 0 } = req.query;
+    const { parentId, page = 0 } = req.query;
+    // console.log(req.query)
     const files = dbClient.db.collection('files');
+    let query;
+    if (!parentId || parentId === '0') {
+      console.log("Constructing query for parentId = '0'");
+      query = { userId: user };
+    } else {
+      query = { parentId: new ObjectID(parentId), userId: user };
+    }
+    console.log(query);
     const result = await files.aggregate([
-      { $match: { userId, parentId: new ObjectID(parentId) } },
+      { $match: query },
       { $skip: page * 20 },
       { $limit: 20 },
     ]).toArray();
