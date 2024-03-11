@@ -101,18 +101,20 @@ class FilesController {
     const files = dbClient.db.collection('files');
     let query;
     if (!parentId || parentId === '0') {
-      console.log("Constructing query for parentId = '0'");
+      // console.log("Constructing query for parentId = '0'");
       query = { userId: user };
     } else {
       query = { parentId: new ObjectID(parentId), userId: user };
     }
-    console.log(query);
+    // console.log(query);
     const result = await files.aggregate([
       { $match: query },
       { $skip: page * 20 },
       { $limit: 20 },
     ]).toArray();
-    res.status(200).json(result);
+    const newArr = result.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
+    // console.log(newArr[0])
+    res.status(200).json(newArr);
   }
 
   static async getShow(req, res) {
