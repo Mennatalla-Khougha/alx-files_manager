@@ -96,16 +96,16 @@ class FilesController {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    const { parentId = 0, page = 0 } = req.query;
+    const { parentId, page = 0 } = req.query;
     // const parentId = ObjectID(pId)
     // console.log(req.query)
     // const parentId = parseInt(req.query.parentId, 10) ? ObjectID(req.query.parentId) : '0';
     // const page = req.query.page || 0;
     const files = dbClient.db.collection('files');
-    let query;
+    let query = { parentId, userId: user };
     if (!parentId || parentId === '0') {
-      // console.log("Constructing query for parentId = '0'");
-      query = { userId: user };
+    //   // console.log("Constructing query for parentId = '0'");
+      query = { userId: user, parentId: 0 };
     } else {
       query = { parentId, userId: user };
     }
