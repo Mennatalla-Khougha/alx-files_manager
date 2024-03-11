@@ -105,11 +105,12 @@ class FilesController {
     let query;
     if (!parentId) {
     // console.log("Constructing query for parentId = '0'");
-      query = { userId: ObjectID(user) };
+      // query = { userId: ObjectID(user) };
+      query = { userId: user };
     } else {
       query = { parentId: ObjectID(parentId), userId: ObjectID(user) };
     }
-    // console.log(query);
+    console.log(query);
     const result = await files.aggregate([
       { $match: query },
       { $skip: parseInt(page, 10) * 20 },
@@ -117,7 +118,7 @@ class FilesController {
     ]).toArray();
     const newArr = result.map(({ _id, localPath, ...rest }) => ({ id: _id, ...rest }));
     // console.log(newArr[0])
-    delete newArr.localPath;
+    // delete newArr.localPath;
     // console.log(newArr[1])
     res.status(200).json(newArr);
   }
@@ -196,21 +197,33 @@ class FilesController {
     const token = req.header('X-Token');
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
+
     if (!userId || (!file.isPublic && file.userId !== userId)) {
       res.status(404).json({ error: 'Not found' });
       return;
     }
+
     if (file.type === 'folder') {
       res.status(404).json({ error: "A folder doesn't have content" });
       return;
     }
+
+    // const exist = await fs.promises.exists(file.localPath)
+    // await fs.promises.exists(file.localPath, (exists) => {
+    //   return res.status(404).json({error: 'Not found'});
+    // });
     if (!fs.existsSync(file.localPath)) {
+      // console.log("exts, call back")
       res.status(404).json({ error: 'Not found' });
       return;
     }
+    // console.log("it should've stoped")
+
     const mimeType = mime.lookup(file.name);
+    console.log(mimeType);
     res.setHeader('Content-Type', mimeType);
-    const fileData = fs.readFileSync(file.localPath);
+    const fileData = await fs.promises.readFile(file.localPath);
+    console.log(fileData);
     res.send(fileData);
   }
 }
