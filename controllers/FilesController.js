@@ -13,7 +13,6 @@ class FilesController {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    console.log(req.body);
     const {
       name, type, parentId = 0, isPublic = false, data,
     } = req.body;
@@ -102,17 +101,17 @@ class FilesController {
     // const parentId = parseInt(req.query.parentId, 10) ? ObjectID(req.query.parentId) : '0';
     // const page = req.query.page || 0;
     const files = dbClient.db.collection('files');
-    let query = { parentId, userId: user };
-    if (!parentId || parentId === '0') {
-    //   // console.log("Constructing query for parentId = '0'");
-      query = { userId: user, parentId: 0 };
+    let query;
+    if (!parentId) {
+    // console.log("Constructing query for parentId = '0'");
+      query = { userId: ObjectID(user) };
     } else {
-      query = { parentId, userId: user };
+      query = { parentId: ObjectID(parentId), userId: ObjectID(user) };
     }
-    console.log(query);
+    // console.log(query);
     const result = await files.aggregate([
       { $match: query },
-      { $skip: page * 20 },
+      { $skip: parseInt(page, 10) * 20 },
       { $limit: 20 },
     ]).toArray();
     const newArr = result.map(({ _id, localPath, ...rest }) => ({ id: _id, ...rest }));
@@ -131,11 +130,10 @@ class FilesController {
       return;
     }
     const { id } = req.params;
-    console.log(id);
     const files = dbClient.db.collection('files');
     const objectId = new ObjectID(id);
-    console.log(objectId);
-    const file = await files.findOne({ _id: objectId, userId });
+    const objectId2 = new ObjectID(userId);
+    const file = await files.findOne({ _id: objectId, userId: objectId2 });
     if (!file) {
       res.status(404).json({ error: 'Not found' });
       return;
