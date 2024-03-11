@@ -96,7 +96,7 @@ class FilesController {
       res.status(401).json({ error: 'Unauthorized' });
       return;
     }
-    const { parentId = '0', page = 0 } = req.query;
+    const { parentId = 0, page = 0 } = req.query;
     // const parentId = ObjectID(pId)
     // console.log(req.query)
     // const parentId = parseInt(req.query.parentId, 10) ? ObjectID(req.query.parentId) : '0';
