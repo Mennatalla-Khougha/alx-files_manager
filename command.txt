@@ -1,0 +1,14 @@
+terminal 1
+redis-server &
+
+sudo /usr/bin/mongod --config /etc/mongod.conf
+
+service mongod status
+
+service mongod start
+
+terminal 2
+npm run start-serve
+
+terminal 3 
+commands

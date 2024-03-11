@@ -97,6 +97,7 @@ class FilesController {
       return;
     }
     const { parentId, page = 0 } = req.query;
+    // const parentId = ObjectID(pId)
     // console.log(req.query)
     const files = dbClient.db.collection('files');
     let query;
@@ -104,7 +105,7 @@ class FilesController {
       // console.log("Constructing query for parentId = '0'");
       query = { userId: user };
     } else {
-      query = { parentId: new ObjectID(parentId), userId: user };
+      query = { parentId: ObjectID(parentId), userId: user };
     }
     // console.log(query);
     const result = await files.aggregate([
@@ -112,8 +113,10 @@ class FilesController {
       { $skip: page * 20 },
       { $limit: 20 },
     ]).toArray();
-    const newArr = result.map(({ _id, ...rest }) => ({ id: _id, ...rest }));
+    const newArr = result.map(({ _id, localPath,...rest }) => ({ id: _id, ...rest }));
     // console.log(newArr[0])
+    delete newArr.localPath;
+    // console.log(newArr[1])
     res.status(200).json(newArr);
   }
 
