@@ -190,8 +190,7 @@ class FilesController {
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
 
-    // if (!userId || (!file.isPublic && file.userId !== userId)) {
-    if (!file.isPublic && (!userId || file.userId !== userId)){
+    if (!file.isPublic && (!userId || file.userId.toString() !== userId)) {
       res.status(404).json({ error: 'Not found' });
       return;
     }
@@ -201,12 +200,11 @@ class FilesController {
       return;
     }
 
-
-    fs.stat(file.localPath, (err, stats) => {
+    fs.stat(file.localPath, (err) => {
       if (err) {
         res.status(404).json({ error: 'Not found' });
       }
-    })
+    });
 
     const mimeType = mime.lookup(file.name);
     res.setHeader('Content-Type', mimeType);
