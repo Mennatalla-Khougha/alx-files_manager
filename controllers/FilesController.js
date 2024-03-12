@@ -100,8 +100,8 @@ class FilesController {
     const files = dbClient.db.collection('files');
     let query;
     if (!parentId) {
-      // query = { userId: ObjectID(user) };
-      query = { userId: user };
+      query = { userId: ObjectID(user) };
+      // query = { userId: user };
     } else {
       query = { parentId: ObjectID(parentId), userId: ObjectID(user) };
     }
