@@ -100,8 +100,8 @@ class FilesController {
     const files = dbClient.db.collection('files');
     let query;
     if (!parentId) {
-      query = { userId: ObjectID(user) };
-      // query = { userId: user };
+      // query = { userId: ObjectID(user) };
+      query = { userId: user };
     } else {
       query = { parentId: ObjectID(parentId), userId: ObjectID(user) };
     }
@@ -190,57 +190,28 @@ class FilesController {
     const key = `auth_${token}`;
     const userId = await redisClient.get(key);
 
-    if (!userId || (!file.isPublic && file.userId !== userId)) {
+    // if (!userId || (!file.isPublic && file.userId !== userId)) {
+    if (!file.isPublic && (!userId || file.userId !== userId)){
       res.status(404).json({ error: 'Not found' });
       return;
     }
 
     if (file.type === 'folder') {
-      res.status(404).json({ error: "A folder doesn't have content" });
+      res.status(400).json({ error: "A folder doesn't have content" });
       return;
     }
 
-    // const exist = await fs.promises.exists(file.localPath)
-    // await fs.promises.exists(file.localPath, (exists) => {
-    //   return res.status(404).json({error: 'Not found'});
-    // });
-    // const size = req.query.size || null;
-    // let filePath = file.localPath;
-    // if (size) {
-    //   filePath = `${file.localPath}_${size}`;
-    // }
-    // console.log(filePath)
-    if (!fs.existsSync(file.localPath)) {
-      // console.log(file._id)
-      // console.log("Not there")
-      res.status(404).json({ error: 'Not found' });
-      return;
-    }
+
+    fs.stat(file.localPath, (err, stats) => {
+      if (err) {
+        res.status(404).json({ error: 'Not found' });
+      }
+    })
 
     const mimeType = mime.lookup(file.name);
-    console.log(mimeType);
     res.setHeader('Content-Type', mimeType);
-    const fileData = (await fs.promises.readFile(file.localPath)).toString();
-    // console.log(file.localPath);
-    console.log(fileData);
+    const fileData = (await fs.promises.readFile(file.localPath));
     res.status(200).send(fileData);
-    // let filePath = file.localPath;
-    // if (size) {
-    // filePath = `${file.localPath}_${size}`;
-    // }
-    // if (fs.existsSync(filePath)) {
-    //   const fileInfo = await fs.statAsync(filePath);
-    //   if (!fileInfo.isFile()) {
-    //     res.status(404).json({ error: 'Not found' });
-    //     return;
-    //   }
-    // } else {
-    //   res.status(404).json({ error: 'Not found' });
-    //   return;
-    // }
-    // const absoluteFilePath = await fs.realpathAsync(filePath);
-    // res.setHeader('Content-Type', mime.contentType(file.name) || 'text/plain; charset=utf-8');
-    // res.status(200).sendFile(absoluteFilePath);
   }
 }
 module.exports = FilesController;
